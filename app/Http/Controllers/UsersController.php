@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\User;
 use App\Plan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Input;
 use Validator;
 
 class UsersController extends Controller
@@ -96,11 +97,12 @@ class UsersController extends Controller
      */
     public function update(Request $request, $id)
     {
+
       $validator = Validator::make($request->all(),[
           'firstname' => 'required',
           'lastname' => 'required',
-          'email' => 'required | email | unique',
-          'phone' => 'phone',
+          'email' => 'required | email',
+          'phone' => 'required',
         ]);
         if($validator->fails()){
           $response = array('response' => $validator->messages(), 'success' => false);

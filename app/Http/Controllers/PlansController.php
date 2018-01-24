@@ -19,7 +19,9 @@ class PlansController extends Controller
     public function index()
     {
         $plans = Plan::orderBy('id','desc')->get();
-        return response()->json($plans);
+        $difficulty_levels=DifficultyLevel::orderBy('id','asc')->get();
+        $exercises=Exercise::all();
+        return response()->json(array('plans'=>$plans , 'difficulty_levels'=>$difficulty_levels, 'exercises'=>$exercises));
     }
 
 
@@ -31,8 +33,10 @@ class PlansController extends Controller
      */
     public function store(Request $request)
     {
+        $data = $request->get('data'); 
         $validator = Validator::make($request->all(),[
-          'text' => 'required'
+          'plan_name' => 'required',
+          'plan_difficulty' => 'required'
         ]);
 
         if($validator->fails()){
@@ -41,29 +45,28 @@ class PlansController extends Controller
         } else {
           // Create plan
           $plan = new Plan();
-          $plan->text = $request->input('plan_name');
-          $plan->body = $request->input('plan_difficulty');
-          $plan->body = $request->input('plan_description');
+          $plan->plan_name = $request->input('plan_name');
+          $plan->plan_difficulty = $request->input('plan_difficulty');
+          $plan->plan_description = $request->input('plan_description');
           $plan->save();
-          // foreach ($request->input('day') as $d):
-          //     $day= new PlanDay();
-          //     $day->plan_id=$plan->id;
-          //     $day->day_name=$d['day_name'];
-          //     $day->order=$d['day_order'];
-          //     $day->save();
-          //     foreach ($d['exercises'] as $e):
-          //         $exercise= new ExerciseInstance();
-          //         $exercise->exercise_id= $e['exercise_id'];
-          //         $exercise->day_id=$day->id;
-          //         $exercise->order=$e['exercise_order'];
-          //         $exercise->exercise_duration=$e['exercise_duration'];
-          //         $exercise->save();
-          //     endforeach;
-          // endforeach;
+          foreach ($request->input('day') as $d):
+              $day= new PlanDay();
+              $day->plan_id=$plan->id;
+              $day->day_name=$d['day_name'];
+              $day->order=$d['day_order'];
+              $day->save();
+              foreach ($d['exercises'] as $e):
+                  $exercise= new ExerciseInstance();
+                  $exercise->exercise_id= $e['exercise_id'];
+                  $exercise->day_id=$day->id;
+                  $exercise->order=$e['exercise_order'];
+                  $exercise->exercise_duration=$e['exercise_duration'];
+                  $exercise->save();
+              endforeach;
+          endforeach;
 
-          //return response()->json($plan);
+          return response()->json($plan);
         }
-        return 123;
     }
 
     /**
@@ -75,7 +78,9 @@ class PlansController extends Controller
     public function show($id)
     {
         $plan = Plan::find($id);
-        return response()->json($plan);
+        $difficulty_levels=Difficulty::orderBy('id','asc')->get();
+        $exercises=Exercise::all();
+        return response()->json(array('plan'=>$plan, 'difficulty_levels'=>$difficulty_levels, 'exercises'=>$exercises));
     }
 
     /**
