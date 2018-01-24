@@ -7,6 +7,7 @@ use App\Exercise;
 use App\Plan;
 use App\DifficultyLevel;
 use App\ExerciseInstance;
+use Validator;
 
 class PlansController extends Controller
 {
@@ -136,5 +137,20 @@ class PlansController extends Controller
         $array["exercises"]=$exercises;
 
         return response()->json($array);
+    }
+
+    public function edit($id)
+    {
+      $plan=Plan::find($id);
+      $days=$plan->days;
+      foreach ($days as $day) {
+        $day_exercises=$day->exerciseInstances;
+      }
+      $exercises=Exercise::all();
+      $difficulty_levels=DifficultyLevel::orderBy('id', 'asc')->get();
+      $array['plan']=$plan;
+      $array['exercises']=$exercises;
+      $array['difficulty_levels']=$difficulty_levels;
+      return response()->json($array);
     }
 }

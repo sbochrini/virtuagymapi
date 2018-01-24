@@ -12,6 +12,13 @@ class VerifyCsrfToken extends Middleware
      * @var array
      */
     protected $except = [
-        'api/*'
+      'localhost/virtuagymapi/public/api/*',
+        '/virtuagymapi/public/api/*',
+        'virtuagymapi/public/api/*',
+        '/api/*',
+        'api/*',
+        '/public/api/*',
+        'public/api/*',
+
     ];
 }

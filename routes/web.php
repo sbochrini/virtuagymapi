@@ -11,12 +11,11 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
 
 Route::resource('api/plans','PlansController');
-Route::post('api/plans','PlansController@store');
+//Route::post('api/plans','PlansController@store');
 Route::get('api/addplanform','PlansController@addplanform');
 
-Route::resource('api/users','PlansController');
+Route::resource('api/users','UsersController');
+//Route::post('api/users/store','PlansController@store');
+Route::get('api/addusersform','UsersController@addusersform');
