@@ -17,7 +17,9 @@ class UsersController extends Controller
     public function index()
     {
       $users = User::orderBy('id', 'desc')->get();
-      return response()->json($users);
+      $plans = Plan::all();
+
+      return response()->json(array('users'=>$users,'plans'=>$plans));
     }
 
     /**
@@ -38,14 +40,14 @@ class UsersController extends Controller
      */
     public function store(Request $request)
     {
-      //$data = $request->all();
       $user = new User();
-      $user->firstname=$request->input('firstname');
-      $user->lastname=$request->input('lastname');
-      $user->email=$request->input('email');
-      $user->phone=$request->input('phone');
+      $user->firstname=$request->firstname;
+      $user->lastname=$request->lastname;
+      $user->lastname=$request->lastname;
+      $user->email=$request->email;
+      $user->phone=$request->phone;
       $user->save();
-      foreach ($request->input('plans') as $plan):
+      foreach ($request->plans as $plan):
           DB::table('user_plans')->insert(
               ['user_id' => $user->id, 'plan_id' => $plan]
           );
