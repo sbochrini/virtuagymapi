@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\User;
 use App\Plan;
 use Illuminate\Support\Facades\DB;
+use Validator;
 
 class UsersController extends Controller
 {
@@ -95,29 +96,40 @@ class UsersController extends Controller
      */
     public function update(Request $request, $id)
     {
-      $user = User::find($id);
-      $user->firstname = Input::get('firstname');
-      $user->lastname = Input::get('lastname');
-      $user->email = Input::get('email');
-      $user->phone = Input::get('phone');
-      $user_plans=DB::table('user_plans')
-          ->select('*')
-          ->whereRaw('user_id = :id',[ 'id' => $id] )
-          ->delete();
-      $input_plans=Input::get('plans');
-      if(count($input_plans)>0){
-          foreach ($input_plans as $plan):
+      $validator = Validator::make($request->all(),[
+          'firstname' => 'required',
+          'lastname' => 'required',
+          'email' => 'required | email | unique',
+          'phone' => 'phone',
+        ]);
+        if($validator->fails()){
+          $response = array('response' => $validator->messages(), 'success' => false);
+          return $response;
+        }else{
+          $user = User::find($id);
+          $user->firstname = Input::get('firstname');
+          $user->lastname = Input::get('lastname');
+          $user->email = Input::get('email');
+          $user->phone = Input::get('phone');
+          $user_plans=DB::table('user_plans')
+              ->select('*')
+              ->whereRaw('user_id = :id',[ 'id' => $id] )
+              ->delete();
+          $input_plans=Input::get('plans');
+          if(count($input_plans)>0){
+              foreach ($input_plans as $plan):
+                  DB::table('user_plans')->insert(
+                      ['user_id' => $user->id, 'plan_id' => $plan]
+                  );
+              endforeach;
+          }else{
               DB::table('user_plans')->insert(
-                  ['user_id' => $user->id, 'plan_id' => $plan]
+                  ['user_id' => $user->id, 'plan_id' => $input_plans]
               );
-          endforeach;
-      }else{
-          DB::table('user_plans')->insert(
-              ['user_id' => $user->id, 'plan_id' => $input_plans]
-          );
-      }
-      $user->save();
-      return response()->json($user);
+          }
+          $user->update();
+          return response()->json($user);
+        }
     }
 
     /**
