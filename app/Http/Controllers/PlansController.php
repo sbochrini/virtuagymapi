@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Exercise;
 use App\Plan;
+use App\PlanDay;
 use App\DifficultyLevel;
 use App\ExerciseInstance;
 use Illuminate\Support\Facades\Input;
@@ -34,28 +35,22 @@ class PlansController extends Controller
      */
     public function store(Request $request)
     {
-      $data =$request->data;
-        return response($data->plan_name);
-
-
-        $validator = Validator::make($request->data,[
+        $data =json_decode($request->data,true);
+        $validator = Validator::make($data,[
           'plan_name' => 'required',
-          //'exercises.exercise_duration'=>'numeric'
+          'days.*.exercises.*.exercise_duration'=>'numeric'
         ]);
-
         if($validator->fails()){
           $response = array('response' => $validator->messages(), 'success' => false);
           return $response;
         } else {
           // Create plan
-
-
           $plan = new Plan();
-          $plan->plan_name = Input::get('plan_name');
-          $plan->plan_difficulty = Input::get('plan_difficulty');
-          $plan->plan_description = Input::get('plan_description');
+          $plan->plan_name = $data['plan_name'];
+          $plan->plan_difficulty = $data['plan_difficulty'];
+          $plan->plan_description = $data['plan_description'];
           $plan->save();
-          foreach ($request->input('day') as $d):
+          foreach ($data['days'] as $d):
               $day= new PlanDay();
               $day->plan_id=$plan->id;
               $day->day_name=$d['day_name'];
@@ -70,8 +65,7 @@ class PlansController extends Controller
                   $exercise->save();
               endforeach;
           endforeach;
-
-          return response()->json($plan);
+          return response()->json(array('plan'=>$plan,'success'=>true));
         }
     }
 
@@ -98,20 +92,43 @@ class PlansController extends Controller
      */
     public function update(Request $request, $id)
     {
-      $validator = Validator::make($request->all(),[
-        'text' => 'required'
+      $data =json_decode($request->data,true);
+      $validator = Validator::make($data,[
+        'plan_name' => 'required',
+        'days.*.exercises.*.exercise_duration'=>'numeric'
       ]);
-
       if($validator->fails()){
         $response = array('response' => $validator->messages(), 'success' => false);
         return $response;
       } else {
         // Find an plan
         $plan = Plan::find($id);
-        $plan->plan_name = $request->input('plan_name');
-        $plan->plan_description = $request->input('plan_description');
-        $plan->save();
-
+        $plan->plan_name = $data['plan_name'];
+        $plan->plan_difficulty = $data['plan_difficulty'];
+        $plan->plan_description = $data['plan_description'];
+        foreach ($plan->$days as $days):
+          foreach($day->exerciseInstances as $exercise_instance):
+            $exercise_instance->delete();
+          endforeach;
+          $day->delete();
+        endforeach;
+        foreach ($data['days'] as $d):
+            $day= new PlanDay();
+            $day->plan_id=$plan->id;
+            $day->day_name=$d['day_name'];
+            $day->order=$d['day_order'];
+            $day->save();
+            foreach ($d['exercises'] as $e):
+                $exercise= new ExerciseInstance();
+                $exercise->exercise_id= $e['exercise_id'];
+                $exercise->day_id=$day->id;
+                $exercise->order=$e['exercise_order'];
+                $exercise->exercise_duration=$e['exercise_duration'];
+                $exercise->save();
+            endforeach;
+        endforeach;
+        $plan->update();
+          //TODO send email
         return response()->json($plan);
       }
     }
@@ -135,6 +152,8 @@ class PlansController extends Controller
            $day->delete();
        endforeach;
       $plan->delete();
+
+      //TODO send email
 
       $response = array('response' => 'Plan deleted', 'success' => true);
       return $response;
@@ -165,5 +184,10 @@ class PlansController extends Controller
       return response()->json($array);
     }
 
+    public function addexerisedropdown(Request $request)
+    {
+        $exercises=Exercise::all();
+        return response()->json($exercises);
+    }
 
 }

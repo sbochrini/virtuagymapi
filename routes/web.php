@@ -15,6 +15,7 @@
 Route::resource('api/plans','PlansController');
 //Route::post('api/plans','PlansController@store');
 Route::get('api/addplanform','PlansController@addplanform');
+Route::get('api/addexerisedropdown','PlansController@addexerisedropdown');
 
 Route::resource('api/users','UsersController');
 //Route::post('api/users/store','PlansController@store');
