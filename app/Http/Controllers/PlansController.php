@@ -7,6 +7,7 @@ use App\Exercise;
 use App\Plan;
 use App\DifficultyLevel;
 use App\ExerciseInstance;
+use Illuminate\Support\Facades\Input;
 use Validator;
 
 class PlansController extends Controller
@@ -33,10 +34,13 @@ class PlansController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->get('data'); 
-        $validator = Validator::make($request->all(),[
+      $data =$request->data;
+        return response($data->plan_name);
+
+
+        $validator = Validator::make($request->data,[
           'plan_name' => 'required',
-          'plan_difficulty' => 'required'
+          //'exercises.exercise_duration'=>'numeric'
         ]);
 
         if($validator->fails()){
@@ -44,10 +48,12 @@ class PlansController extends Controller
           return $response;
         } else {
           // Create plan
+
+
           $plan = new Plan();
-          $plan->plan_name = $request->input('plan_name');
-          $plan->plan_difficulty = $request->input('plan_difficulty');
-          $plan->plan_description = $request->input('plan_description');
+          $plan->plan_name = Input::get('plan_name');
+          $plan->plan_difficulty = Input::get('plan_difficulty');
+          $plan->plan_description = Input::get('plan_description');
           $plan->save();
           foreach ($request->input('day') as $d):
               $day= new PlanDay();
@@ -158,4 +164,6 @@ class PlansController extends Controller
       $array['difficulty_levels']=$difficulty_levels;
       return response()->json($array);
     }
+
+
 }

@@ -42,6 +42,7 @@ class UsersController extends Controller
      */
     public function store(Request $request)
     {
+      // TODO: validator
       $user = new User();
       $user->firstname=$request->firstname;
       $user->lastname=$request->lastname;
@@ -49,6 +50,7 @@ class UsersController extends Controller
       $user->email=$request->email;
       $user->phone=$request->phone;
       $user->save();
+      // TODO: check an den uparxoun
       foreach ($request->plans as $plan):
           DB::table('user_plans')->insert(
               ['user_id' => $user->id, 'plan_id' => $plan]
