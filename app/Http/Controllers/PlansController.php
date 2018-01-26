@@ -106,27 +106,36 @@ class PlansController extends Controller
         $plan->plan_name = $data['plan_name'];
         $plan->plan_difficulty = $data['plan_difficulty'];
         $plan->plan_description = $data['plan_description'];
-        foreach ($plan->$days as $day):
-          foreach($day->exerciseInstances as $exercise_instance):
-            $exercise_instance->delete();
-          endforeach;
-          $day->delete();
-        endforeach;
-        foreach ($data['days'] as $d):
-            $day= new PlanDay();
-            $day->plan_id=$plan->id;
-            $day->day_name=$d['day_name'];
-            $day->order=$d['day_order'];
-            $day->save();
-            foreach ($d['exercises'] as $e):
-                $exercise= new ExerciseInstance();
-                $exercise->exercise_id= $e['exercise_id'];
-                $exercise->day_id=$day->id;
-                $exercise->order=$e['exercise_order'];
-                $exercise->exercise_duration=$e['exercise_duration'];
-                $exercise->save();
+        if(isset($plan->days)){
+            foreach ($plan->days as $day):
+                if(isset($day->exerciseInstances)){
+                    foreach($day->exerciseInstances as $exercise_instance):
+                        $exercise_instance->delete();
+                    endforeach;
+                }
+                $day->delete();
             endforeach;
-        endforeach;
+        }
+        if(isset($data['days'])){
+            foreach ($data['days'] as $d):
+                $day= new PlanDay();
+                $day->plan_id=$plan->id;
+                $day->day_name=$d['day_name'];
+                $day->order=$d['day_order'];
+                $day->save();
+                if(isset($d['exercises'])){
+                    foreach ($d['exercises'] as $e):
+                        $exercise= new ExerciseInstance();
+                        $exercise->exercise_id= $e['exercise_id'];
+                        $exercise->day_id=$day->id;
+                        $exercise->order=$e['exercise_order'];
+                        $exercise->exercise_duration=$e['exercise_duration'];
+                        $exercise->save();
+                    endforeach;
+                }
+            endforeach;
+        }
+
         $plan->update();
           //TODO send email
         return response()->json($plan);
