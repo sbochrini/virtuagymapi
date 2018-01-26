@@ -10,7 +10,9 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-
+Route::get('/', function () {
+    return view('welcome');
+});
 
 Route::resource('api/plans','PlansController');
 //Route::post('api/plans','PlansController@store');

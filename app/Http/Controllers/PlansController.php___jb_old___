@@ -106,7 +106,7 @@ class PlansController extends Controller
         $plan->plan_name = $data['plan_name'];
         $plan->plan_difficulty = $data['plan_difficulty'];
         $plan->plan_description = $data['plan_description'];
-        foreach ($plan->$days as $day):
+        foreach ($plan->$days as $days):
           foreach($day->exerciseInstances as $exercise_instance):
             $exercise_instance->delete();
           endforeach;
@@ -187,7 +187,7 @@ class PlansController extends Controller
     public function addexerisedropdown(Request $request)
     {
         $exercises=Exercise::all();
-        return response()->json(array('exercises'=>$exercises));
+        return response()->json($exercises);
     }
 
 }
