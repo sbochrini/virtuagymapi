@@ -37,14 +37,21 @@ class PlansController extends Controller
      */
     public function store(Request $request)
     {
+        $messages = [
+            'plan_name.required' => 'Workout plan name is required!',
+            'plan_difficulty.required' => 'Workout plan difficulty is required!',
+            'days.day_name.required' => 'Plan day anme is required!',
+            'days.*.exercises.*.exercise_duration.numeric'=>'Exercise duration must be a number!'
+        ];
         $data =json_decode($request->data,true);
         $validator = Validator::make($data,[
           'plan_name' => 'required',
           'plan_difficulty' =>'required',
+          'days.day_name' => 'required',
           'days.*.exercises.*.exercise_duration'=>'numeric'
-        ]);
+        ],$messages);
         if($validator->fails()){
-          $response = array('response' => $validator->messages(), 'success' => false);
+          $response = array('msg' => $validator->messages(), 'success' => false);
           return $response;
         } else {
           // Create plan
@@ -106,12 +113,20 @@ class PlansController extends Controller
     public function update(Request $request, $id)
     {
       $data =json_decode($request->data,true);
+      $messages = [
+        'plan_name.required' => 'Workout plan name is required!',
+        'plan_difficulty.required' => 'Workout plan difficulty is required!',
+        'days.day_name.required' => 'Plan day anme is required!',
+        'days.*.exercises.*.exercise_duration.numeric'=>'Exercise duration must be a number!'
+      ];
       $validator = Validator::make($data,[
         'plan_name' => 'required',
+        'plan_difficulty' =>'required',
+        'days.day_name' => 'required',
         'days.*.exercises.*.exercise_duration'=>'numeric'
-      ]);
+      ],$messages);
       if($validator->fails()){
-        $response = array('response' => $validator->messages(), 'success' => false);
+        $response = array('msg' => $validator->messages(), 'success' => false);
         return $response;
       } else {
         // Find an plan
@@ -138,12 +153,14 @@ class PlansController extends Controller
                 $day->save();
                 if(isset($d['exercises'])){
                     foreach ($d['exercises'] as $e):
+                      if($e['exercise_id']!==""){
                         $exercise= new ExerciseInstance();
                         $exercise->exercise_id= $e['exercise_id'];
                         $exercise->day_id=$day->id;
                         $exercise->order=$e['exercise_order'];
                         $exercise->exercise_duration=$e['exercise_duration'];
                         $exercise->save();
+                      }
                     endforeach;
                 }
             endforeach;
@@ -154,7 +171,7 @@ class PlansController extends Controller
         foreach($users as $user){
             \Mail::to($user)->send(new UpdatePlanMail($user,$plan));
         }
-        return response()->json($plan);
+        return response()->json(array('plan'=>$plan,'success'=>true));
       }
     }
 

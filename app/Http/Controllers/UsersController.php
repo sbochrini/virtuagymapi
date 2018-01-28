@@ -47,20 +47,37 @@ class UsersController extends Controller
     public function store(Request $request)
     {
       // TODO: validator
-      $user = new User();
-      $user->firstname=$request->firstname;
-      $user->lastname=$request->lastname;
-      $user->lastname=$request->lastname;
-      $user->email=$request->email;
-      $user->phone=$request->phone;
-      $user->save();
-      // TODO: check an den uparxoun
-      foreach ($request->plans as $plan):
-          DB::table('user_plans')->insert(
-              ['user_id' => $user->id, 'plan_id' => $plan]
-          );
-      endforeach;
-      return response()->json($user);
+      $messages=[
+        'firstname.required' => 'Firstame is required!',
+        'lastname.required' => 'Lastame is required!',
+        'email.required' => 'Email is required!',
+        'email.email' => 'Email must be a valid email address!'
+      ];
+      $validator = Validator::make($request->all(),[
+          'firstname' => 'required',
+          'lastname' => 'required',
+          'email' => 'required | email',
+          //'phone' => 'required',
+        ],$messages);
+        if($validator->fails()){
+          $response = array('msg' => $validator->messages(), 'success' => false);
+          return $response;
+        }else{
+        $user = new User();
+        $user->firstname=$request->firstname;
+        $user->lastname=$request->lastname;
+        $user->lastname=$request->lastname;
+        $user->email=$request->email;
+        $user->phone=$request->phone;
+        $user->save();
+        // TODO: check an den uparxoun
+        foreach ($request->plans as $plan):
+            DB::table('user_plans')->insert(
+                ['user_id' => $user->id, 'plan_id' => $plan]
+            );
+        endforeach;
+        return response()->json(array('user'=>$user, 'success'=>true));
+      }
     }
 
     /**
@@ -127,15 +144,20 @@ class UsersController extends Controller
      */
     public function update(Request $request, $id)
     {
-
+      $messages=[
+        'firstname.required' => 'Firstame is required!',
+        'lastname.required' => 'Lastame is required!',
+        'email.required' => 'Email is required!',
+        'email.email' => 'Email must be a valid email address!'
+      ];
       $validator = Validator::make($request->all(),[
           'firstname' => 'required',
           'lastname' => 'required',
           'email' => 'required | email',
-          'phone' => 'required',
-        ]);
+          //'phone' => 'required',
+        ],$messages);
         if($validator->fails()){
-          $response = array('response' => $validator->messages(), 'success' => false);
+          $response = array('msg' => $validator->messages(), 'success' => false);
           return $response;
         }else{
           $user = User::find($id);
@@ -160,7 +182,7 @@ class UsersController extends Controller
               );
           }
           $user->update();
-          return response()->json($user);
+          return response()->json(array('user'=>$user,'success'=>true));
         }
     }
 
