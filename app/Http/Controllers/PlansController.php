@@ -10,6 +10,8 @@ use App\DifficultyLevel;
 use App\ExerciseInstance;
 use Illuminate\Support\Facades\Input;
 use Validator;
+use App\Mail\DeletePlanMail;
+use App\Mail\UpdatePlanMail;
 
 class PlansController extends Controller
 {
@@ -38,6 +40,7 @@ class PlansController extends Controller
         $data =json_decode($request->data,true);
         $validator = Validator::make($data,[
           'plan_name' => 'required',
+          'plan_difficulty' =>'required',
           'days.*.exercises.*.exercise_duration'=>'numeric'
         ]);
         if($validator->fails()){
@@ -78,9 +81,19 @@ class PlansController extends Controller
     public function show($id)
     {
         $plan = Plan::find($id);
-        $difficulty_levels=Difficulty::orderBy('id','asc')->get();
-        $exercises=Exercise::all();
-        return response()->json(array('plan'=>$plan, 'difficulty_levels'=>$difficulty_levels, 'exercises'=>$exercises));
+        $difficulty=$plan->difficulty;
+        $days=$plan->days;
+        if($days!==null){
+          foreach ($days as $day) {
+            $exercise_instances=$day->exerciseInstances;
+            foreach ($exercise_instances as $exercise_instance) {
+              if($exercise_instance!==null){
+                $exercise_instance->exerciseName;
+              }
+            }
+          }
+        }
+        return response()->json(array('plan'=>$plan));
     }
 
     /**
@@ -137,7 +150,10 @@ class PlansController extends Controller
         }
 
         $plan->update();
-          //TODO send email
+        $users=$plan->users;
+        foreach($users as $user){
+            \Mail::to($user)->send(new UpdatePlanMail($user,$plan));
+        }
         return response()->json($plan);
       }
     }
@@ -153,16 +169,23 @@ class PlansController extends Controller
       // Find an plan
       $plan = Plan::find($id);
       $days=$plan->days;
-       foreach ($days as $day):
-           $exercises=$day->exerciseInstances;
-           foreach ($exercises as $exercise):
-               $exercise->delete();
-           endforeach;
-           $day->delete();
-       endforeach;
+      if(isset($days)){
+        foreach ($days as $day):
+            $exercises=$day->exerciseInstances;
+            if(isset($exercises)){
+              foreach ($exercises as $exercise):
+                  $exercise->delete();
+              endforeach;
+            }
+            $day->delete();
+        endforeach;
+      }
       $plan->delete();
 
-      //TODO send email
+      $users=$plan->users;
+      foreach($users as $user){
+          \Mail::to($user)->send(new DeletePlanMail($user,$plan));
+      }
 
       $response = array('response' => 'Plan deleted', 'success' => true);
       return $response;

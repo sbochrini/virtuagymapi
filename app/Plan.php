@@ -10,7 +10,7 @@ class Plan extends Model
     public $timestamps = false;
 
     public function days(){
-        return $this->hasMany('App\PlanDay');
+        return $this->hasMany('App\PlanDay')->orderBy('order');
     }
 
     public function difficulty(){
@@ -19,6 +19,6 @@ class Plan extends Model
 
     public function users()
     {
-        return $this->belongsToMany('App\User');
+        return $this->belongsToMany('App\User','user_plans');
     }
 }

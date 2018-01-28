@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\User;
 use App\Plan;
+use App\PlanDay;
+use App\DifficultyLevel;
+use App\Exercise;
+use App\ExerciseInstance;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Validator;
@@ -67,7 +71,30 @@ class UsersController extends Controller
      */
     public function show($id)
     {
-        //
+
+      $user = User::find($id);
+      $userplans_ids=DB::table('user_plans')->select("plan_id")->where('user_id', $id)->pluck('plan_id');
+
+      if($userplans_ids !== null){
+          $userplans=Plan::whereIn('id',$userplans_ids)->get();
+          if($userplans!==null){
+            foreach ($userplans as $plan) {
+              $days=$plan->days;
+               if($days!==null){
+                 foreach ($days as $day) {
+                   $exercise_instances=$day->exerciseInstances;
+                   foreach ($exercise_instances as $exercise_instance) {
+                     if($exercise_instance!==null){
+                       $exercise_instance->exerciseName;
+                     }
+                   }
+                 }
+              }
+            }
+          }
+      }
+
+       return response()->json(array('user'=>$user, 'userplans'=>$userplans));
     }
 
     /**
@@ -79,13 +106,14 @@ class UsersController extends Controller
     public function edit($id)
     {
       $user=User::find($id);
-      $user_plans=DB::table('user_plans')
-          ->select('plan_id')
-          ->whereRaw('user_id = :id',[ 'id' => $id] )
-          ->get();
+      $user_plans=$user->plans->pluck('id');
+      // $user_plans=DB::table('user_plans')
+      //     ->select('plan_id')
+      //     ->whereRaw('user_id = :id',[ 'id' => $id] )
+      //     ->get();
       $plans=Plan::select('id','plan_name')->get();
       $array['user']=$user;
-      $array['user_plans']=$user_plans;
+      $array['user_plans']= $user_plans;
       $array['plans']=$plans;
       return response()->json($array);
     }

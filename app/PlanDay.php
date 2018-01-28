@@ -14,10 +14,10 @@ class PlanDay extends Model
     }
 
     public function exercises(){
-        return $this->belongsToMany('App\Exercise', 'exercise_instances', 'day_id', 'exercise_id');;
+        return $this->belongsToMany('App\Exercise', 'exercise_instances', 'day_id', 'exercise_id');
     }
 
     public function exerciseInstances(){
-        return $this->hasMany('App\ExerciseInstance', 'day_id', 'id');
+        return $this->hasMany('App\ExerciseInstance', 'day_id', 'id')->orderBy('order');
     }
 }
