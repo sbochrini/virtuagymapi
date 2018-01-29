@@ -12,7 +12,7 @@
         </nav>
         <div class="alert alert-danger mt-3" role="alert">
           <h4 class="alert-heading">Hello {{$user->firstname}} {{$user->lastname}}!</h4>
-          <p>Your workout plan {{$plan->plan_name}} has been updated!</p>
+          <p>Your workout plan {{$plan->plan_name}} has been deleted!</p>
           <hr>
         </div>
     </div>

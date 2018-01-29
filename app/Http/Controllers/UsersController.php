@@ -51,12 +51,13 @@ class UsersController extends Controller
         'firstname.required' => 'Firstame is required!',
         'lastname.required' => 'Lastame is required!',
         'email.required' => 'Email is required!',
-        'email.email' => 'Email must be a valid email address!'
+        'email.email' => 'Email must be a valid email address!',
+        'email.unique' => 'The email address already exists!'
       ];
       $validator = Validator::make($request->all(),[
           'firstname' => 'required',
           'lastname' => 'required',
-          'email' => 'required | email',
+          'email' => 'required | email | unique:users,email',
           //'phone' => 'required',
         ],$messages);
         if($validator->fails()){
