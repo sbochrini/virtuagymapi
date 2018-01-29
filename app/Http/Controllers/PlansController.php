@@ -223,14 +223,21 @@ class PlansController extends Controller
 
     public function edit($id)
     {
+      $array=[];
       $plan=Plan::find($id);
+      $array['plan']=$plan;
       $days=$plan->days;
       foreach ($days as $day) {
+        //[$day->order-1]$array['plan']['days'][$day->order-1]['exercise_ids']='';
         $day_exercises=$day->exerciseInstances;
+        $exercise_id_array[$day->order-1]=$day_exercises->pluck('exercise_id');
+
+        $array['plan']['days'][$day->order-1]['exercise_ids']=$exercise_id_array[$day->order-1];
       }
+
       $exercises=Exercise::all();
       $difficulty_levels=DifficultyLevel::orderBy('id', 'asc')->get();
-      $array['plan']=$plan;
+
       $array['exercises']=$exercises;
       $array['difficulty_levels']=$difficulty_levels;
       return response()->json($array);
